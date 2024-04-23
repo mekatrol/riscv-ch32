@@ -8,6 +8,7 @@ It has the following guidance:
 
 1. Building the riscv-gnu-toolchain
 2. Compiling a simple ASM file using make
+3. Compiling OpenOCD for risc-v 32 bit WCH processors
 3. Flashing the file to a device
 4. Debugging the flashed file 
 
@@ -60,4 +61,67 @@ make
 ### Include toolchain path
 ```bash
 export PATH=$PATH:~/riscv/install/rv32i/bin
+```
+
+## Build OpenOCD for CH32 processors
+
+### Packages
+
+```bash
+sudo apt-get install -y libtool pkg-config texinfo libusb-dev libusb-1.0.0-dev libftdi-dev autoconf
+```
+
+### Clone and initialise repo
+```bash
+git clone https://github.com/mekatrol/riscv-openocd-wch.git
+cd riscv-openocd-wch
+
+chmod +x ./configure
+chmod +x /home/dad/repos/riscv-openocd-wch/jimtcl/configure
+chmod +x /home/dad/repos/riscv-openocd-wch/jimtcl/autosetup/autosetup-find-tclsh
+chmod +x ./src/helper/bin2char.sh
+```
+
+### In ./configure add:
+
+```bash
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-pointer-sign"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-return-type"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-maybe-uninitialized"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-unused-variable"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-incompatible-pointer-types"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-discarded-qualifiers"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-endif-labels"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-sign-compare"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-shadow"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-strict-prototypes"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-unused-but-set-variable"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-implicit-function-declaration"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-unused-label"  
+  GCC_WARNINGS="${GCC_WARNINGS} -Wno-redundant-decls"  
+```
+
+### in src/jtag/drivers/wlink.c add before first use:
+
+```c
+void wlink_ramcodewrite(uint8_t *buffer, int size);
+```
+
+### in src/target/riscv/riscv-013.c change:
+```c
+LOG_DEBUG("[wch] read dcsr value is 0x%x", tmpDcsr);
+```
+**to**
+```c
+LOG_DEBUG("[wch] read dcsr value is 0x%x", (unsigned int) tmpDcsr);
+```
+
+### Configure, make and install OpenOCD
+
+```bash
+./configure --enable-wlink --disable-jlink
+make
+
+# Install to /usr/local/bin/openocd
+sudo make install
 ```
