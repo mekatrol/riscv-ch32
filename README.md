@@ -128,7 +128,9 @@ sudo make install
 
 ## Enabling USB in wsl
 
-> Guid from here [WSL Connect USB devices](https://learn.microsoft.com/en-us/windows/wsl/connect-usb)  
+> Guide from here [WSL Connect USB devices](https://learn.microsoft.com/en-us/windows/wsl/connect-usb)  
+
+### Install [usbipd-win](https://github.com/dorssel/usbipd-win)
 
 ```powershell
 usbipd list
