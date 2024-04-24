@@ -130,7 +130,22 @@ sudo make install
 
 > Guide from here [WSL Connect USB devices](https://learn.microsoft.com/en-us/windows/wsl/connect-usb)  
 
-### Install [usbipd-win](https://github.com/dorssel/usbipd-win)
+### Install 
+
+> [usbipd-win](https://github.com/dorssel/usbipd-win)
+
+### Attach USB to WSL
+
+```powershell
+usbipd list
+```
+Example result:
+> Connected:
+> BUSID  VID:PID    DEVICE                                                        STATE  
+> 1-3    1a86:8010  WCH-LinkRV, WCH-Link SERIAL (COM16)                           Attached  
+> 1-6    0a12:0001  Generic Bluetooth Radio                                       Not shared  
+> 1-13   1b1c:0c08  H80i v2                                                       Not shared  
+> 3-4    046d:c52b  Logitech USB Input Device, USB Input Device                   Not shared  
 
 ```powershell
 usbipd list
