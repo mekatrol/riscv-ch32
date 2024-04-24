@@ -125,3 +125,13 @@ make
 # Install to /usr/local/share/openocd
 sudo make install
 ```
+
+## Enabling USB in wsl
+
+> Guid from here [WSL Connect USB devices](https://learn.microsoft.com/en-us/windows/wsl/connect-usb)  
+
+```powershell
+usbipd list
+usbipd bind --busid <busid>
+usbipd attach --wsl --busid <busid>
+```
