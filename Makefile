@@ -1,9 +1,12 @@
-GNU_DIR=/home/dad/riscv/install/rv32i/bin
+GNU_DIR=/home/dad/MRS_Toolchain_Linux_x64_V1.91/RISC-V_Embedded_GCC/bin
+OPENOCD_DIR=/home/dad/MRS_Toolchain_Linux_x64_V1.91/OpenOCD/bin
 
 TARGET_NAME ?= hello_world
-# TARGET_ELF  ?= $(TARGET_NAME).elf
-# TARGET_HEX  ?= $(TARGET_NAME).hex
-# TARGET_BIN  ?= $(TARGET_NAME).bin
+TARGET_ELF  ?= $(TARGET_NAME).elf
+TARGET_LST  ?= $(TARGET_NAME).lst
+TARGET_HEX  ?= $(TARGET_NAME).hex
+TARGET_BIN  ?= $(TARGET_NAME).bin
+TARGET_MAP  ?= $(TARGET_NAME).map
 
 # AS := riscv64-unknown-elf-as.exe
 # CC := riscv64-unknown-elf-gcc.exe
@@ -20,21 +23,30 @@ SRCS := $(shell find $(SRC_DIRS) -name *.cpp -or -name *.c -or -name *.S)
 MKDIR = mkdir -p
 RM = rm -rf
 
-all: init $(TARGET_NAME).bin $(TARGET_NAME).lst
+all: init $(TARGET_BIN) $(TARGET_HEX) size
 
 init:
 	$(MKDIR) $(BUILD_DIR)
 
-$(TARGET_NAME).bin: $(TARGET_NAME)
-		$(GNU_DIR)/riscv32-unknown-elf-objcopy $(BUILD_DIR)/$(TARGET_NAME) -O binary $(BUILD_DIR)/$(TARGET_NAME).bin
+$(TARGET_HEX): $(TARGET_ELF)
+		$(GNU_DIR)/riscv-none-embed-objcopy -O ihex $(BUILD_DIR)/$(TARGET_ELF) $(BUILD_DIR)/$(TARGET_HEX)
 
-$(TARGET_NAME).lst:
-		$(GNU_DIR)/riscv32-unknown-elf-objdump -Mnumeric,no-aliases -dr $(BUILD_DIR)/$(TARGET_NAME) > $(BUILD_DIR)/$(TARGET_NAME).lst
+$(TARGET_BIN): $(TARGET_ELF)
+		$(GNU_DIR)/riscv-none-embed-objcopy $(BUILD_DIR)/$(TARGET_ELF) -O binary $(BUILD_DIR)/$(TARGET_BIN)
 
-$(TARGET_NAME): src/boot.S
-		$(GNU_DIR)/riscv32-unknown-elf-gcc --freestanding -fno-pic -march=rv32i -mabi=ilp32 -nostdlib -Wl,-Ttext=0x0 -Wl,--no-relax src/boot.S -o $(BUILD_DIR)/$(TARGET_NAME)
+$(TARGET_LST): $(TARGET_ELF)
+		$(GNU_DIR)/riscv-none-embed-objdump -Mnumeric,no-aliases -dr $(BUILD_DIR)/$(TARGET_ELF) > $(BUILD_DIR)/$(TARGET_LST)
+
+$(TARGET_ELF): src/boot.S
+		$(GNU_DIR)/riscv-none-embed-gcc -Wl,-Map=$(BUILD_DIR)/$(TARGET_MAP) --freestanding -fno-pic -march=rv32i -mabi=ilp32 -nostdlib -Wl,-Ttext=0x0 -Wl,--no-relax src/boot.S -o $(BUILD_DIR)/$(TARGET_ELF) 
+
+size: $(TARGET_ELF)
+	$(GNU_DIR)/riscv-none-embed-size $(BUILD_DIR)/$(TARGET_ELF)
+
+flash:
+	$(OPENOCD_DIR)/openocd -f ./openocd/openocd_probe.cfg -f ./openocd/openocd_chip.cfg -c "program {$(BUILD_DIR)/$(TARGET_ELF)} verify reset; shutdown;"
 
 clean:
-	$(RM) $(BUILD_DIR)	
+	$(RM) $(BUILD_DIR)
 
-.PHONY: clean
+.PHONY: clean size
