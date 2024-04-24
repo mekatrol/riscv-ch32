@@ -122,6 +122,6 @@ LOG_DEBUG("[wch] read dcsr value is 0x%x", (unsigned int) tmpDcsr);
 ./configure --enable-wlink --disable-jlink
 make
 
-# Install to /usr/local/bin/openocd
+# Install to /usr/local/share/openocd
 sudo make install
 ```
