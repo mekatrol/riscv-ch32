@@ -37,7 +37,7 @@ $(TARGET_LST): $(TARGET_ELF)
 		$(GNU_DIR)/$(OBJDUMP) -Mnumeric,no-aliases -dr $(BUILD_DIR)/$(TARGET_ELF) > $(BUILD_DIR)/$(TARGET_LST)
 
 $(TARGET_ELF): src/boot.S
-		$(GNU_DIR)/$(GCC) -pipe -Wl,-Map=$(BUILD_DIR)/$(TARGET_MAP) --freestanding -fno-pic -march=rv32i -mabi=ilp32 -nostdlib -Wl,-Ttext=0x0 -Wl,--no-relax src/boot.S -o $(BUILD_DIR)/$(TARGET_ELF) 
+		$(GNU_DIR)/$(GCC) -pipe -Wl,-Map=$(BUILD_DIR)/$(TARGET_MAP) --freestanding -fno-pic -march=rv32i -mabi=ilp32 -nostdlib -Wl,-Ttext=0x0 -Tbss=0x20000000 -Wl,--no-relax src/boot.S -o $(BUILD_DIR)/$(TARGET_ELF) 
 
 size: $(TARGET_ELF)
 	$(GNU_DIR)/$(SIZE) $(BUILD_DIR)/$(TARGET_ELF)
