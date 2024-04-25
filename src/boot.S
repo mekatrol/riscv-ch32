@@ -91,16 +91,37 @@ TOGGLE_BITS:
 ####################################
 # Set LED bit value based on state
 ####################################
+# Clear t1
+	addi                 t1,zero,0
 
-# Load bit PD0 reset / PD4 set values
-	li                   t1,1 << 16 | 1 << 4
-
-# Bit state on?
+# Bit 0 LED state on?
 	li                   t2,STATE_LED_PD0_MASK
-	bne                  t0,t2,UPDATE_GPIO
+	bne                  t0,t2,TURN_PD0_OFF
 
-# Load bit PD0 set / PD4 reset values
-	li                   t1,1 << 0 | 1 << 20
+# Turn PD0 on in t1
+	li                   t2,1 < <0
+	or                   t1,t1,t2
+	j                    TEST_PD4
+
+TURN_PD0_OFF:
+# Turn PD0 off in t1
+	li                   t2,1 << 16
+	or                   t1,t1,t2
+
+TEST_PD4:
+# Bit 2 LED state on?
+	li                   t2,STATE_LED_PD4_MASK
+	bne                  t0,t2,TURN_PD4_OFF
+
+# Turn PD4 on in t1
+	li                   t2,1 << 4
+	or                   t1,t1,t2
+	j                    UPDATE_GPIO
+
+TURN_PD4_OFF:
+# Turn PD4 off in t1
+	li                   t2,1 << 20
+	or                   t1,t1,t2
 
 UPDATE_GPIO:
 # Point to R32_GPIOD_BSHR register
