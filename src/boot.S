@@ -7,6 +7,7 @@
 	.include             "./src/memory.S"
 	.include             "./src/registers.S"
 	.include             "./src/bits.S"
+	.include             "./src/utils.S"
 
 # Bit zero defines if PD0 state and bit 1 PD4 state
 	STATE_LED_PD0_MASK   = 0x00000001
@@ -32,11 +33,14 @@ _start:
 # Point to R32_RCC_CFGR0 register
 	li                   a0,R32_RCC_CFGR0
 
+# No need to mask any bits
+	li                   a1,~0
+
 # Turn HSE ON
-	li                   a1,HSEON
+	li                   a2,HSEON
 
 # Update register
-	call                 set_register_bits
+	call                 set_register_bits_with_mask
 
 #############################
 # Initialise state
@@ -52,11 +56,14 @@ _start:
 # Point to APB2PCENR register
 	li                   a0,R32_RCC_APB2PCENR
 
+# No need to mask any bits
+	li                   a1,~0
+
 # Create port module clock enable mask for ports
-	li                   a1,(IOPAEN|IOPCEN|IOPDEN)
+	li                   a2,(IOPAEN|IOPCEN|IOPDEN)
 
 # Update register
-	call                 set_register_bits
+	call                 set_register_bits_with_mask
 
 #############################
 # Configure GPIO
@@ -64,10 +71,14 @@ _start:
 
 # Point to R32_GPIOD_CFGLR register
 	li                   a0,R32_GPIOD_CFGLR
-	li                   a1,~(GPIO_PD4_MASK | GPIO_PD4_MASK)
+
+# Mask just PD0 and PD4 bits
+	li                   a1,~(GPIO_PD0_MASK | GPIO_PD4_MASK)
+
+# PD0 and PD4 are push pull at max frequency
 	li                   a2, ((GPIO_OUT_UNI_PUSH_PULL | GPIO_OUT_MPX_OD)<<0) | ((GPIO_OUT_UNI_PUSH_PULL | GPIO_OUT_MPX_OD)<<16)
 
-	call                 configure_port
+	call                 set_register_bits_with_mask
 
 #############################
 # Toggle LED bits
@@ -152,39 +163,5 @@ delay:
 
 # If zero not reached then continue looping
 	bne                  t1,zero,delay
-
-	ret
-
-# params:
-# Register in a0
-# Bit mask (bits to set) in a1
-set_register_bits:
-# Load existing register value
-	lw                   t1,0(a0)
-
-# OR with existing register value
-	or                   t1,t1,a1
-
-# Write updated mask to R32_RCC_CFGR0 register
-	sw                   t1,0(a0)
-
-	ret
-
-# params:
-# GPIO register in a0
-# GPIO configuration mask bits (any bits set to 0 will be cleared in config register)
-# GPIO configuration (bits to set) in a2
-configure_port:
-# Load existing register value from a0 pointer into t0
-	lw                   t0,0(a0)
-
-# Clear masked bits in loaded register value
-	and                  t0,t0,a1
-
-# OR GPIO configuration mask with existing register value
-	or                   t0,t0,a2
-
-# Write updated GPIO register
-	sw                   t0,0(a0)
 
 	ret
