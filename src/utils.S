@@ -1,6 +1,6 @@
 ###########################################################################################
 # DESCRIPTION:
-# Sets registers bits using the pattern:
+# Sets register bits using the steps:
 # 1. Load register value from address (a0) int t0
 # 2. AND value in t0 with mask supplied in a1 (clears any bits)
 # 3. OR t0 with the value provided in a2 (sets desired bits)
